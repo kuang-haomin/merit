@@ -160,6 +160,8 @@ def calculate_metric_percase(pred, gt):
 def calculate_dice_percase(pred, gt):
     pred[pred > 0] = 1
     gt[gt > 0] = 1
+    # print(pred.sum())
+    # print(gt.sum())
     if pred.sum() > 0 and gt.sum()>0:
         dice = metric.binary.dc(pred, gt)
         return dice
@@ -209,13 +211,13 @@ def test_single_volume(image, label, net, classes, patch_size=[256, 256], test_s
                 preds_o = []
                 for i in range(1, classes):
                     preds_o.append(pred==i)
-                
-                # saving the groundtruth lables and output prediction maps for each frame
-                fig_gt = overlay_masks(image[ind, :, :], masks, labels=mask_labels, colors=cmap, mask_alpha=0.5)
-                fig_pred = overlay_masks(image[ind, :, :], preds_o, labels=mask_labels, colors=cmap, mask_alpha=0.5)
-                # Do with that image whatever you want to do.
-                fig_gt.savefig(test_save_path + '/'+case + '_' +str(ind)+'_gt.png', bbox_inches="tight", dpi=300)
-                fig_pred.savefig(test_save_path + '/'+case + '_' +str(ind)+'_pred.png', bbox_inches="tight", dpi=300)
+                if test_save_path:
+                    # saving the groundtruth lables and output prediction maps for each frame
+                    fig_gt = overlay_masks(image[ind, :, :], masks, labels=mask_labels, colors=cmap, mask_alpha=0.5)
+                    fig_pred = overlay_masks(image[ind, :, :], preds_o, labels=mask_labels, colors=cmap, mask_alpha=0.5)
+                    # Do with that image whatever you want to do.
+                    fig_gt.savefig(test_save_path + '/'+case + '_' +str(ind)+'_gt.png', bbox_inches="tight", dpi=300)
+                    fig_pred.savefig(test_save_path + '/'+case + '_' +str(ind)+'_pred.png', bbox_inches="tight", dpi=300)
                 prediction[ind] = pred
     else:
         input = torch.from_numpy(image).unsqueeze(
@@ -251,7 +253,8 @@ def val_single_volume(image, label, net, classes, patch_size=[256, 256], test_sa
 
     if len(image.shape) == 3:
         prediction = np.zeros_like(label)
-        for ind in range(image.shape[0]):
+        non_zero_slice = [i for i in range(label.shape[0]) if np.any(label[i,:,:] != 0)]
+        for ind in non_zero_slice:
             slice = image[ind, :, :]
             x, y = slice.shape[0], slice.shape[1]
             if x != patch_size[0] or y != patch_size[1]:

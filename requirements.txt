@@ -11,9 +11,10 @@ seaborn
 albumentations
 tabulate
 warmup-scheduler
-torch==1.11.0+cu113
-torchvision==0.12.0+cu113
-mmcv-full -f https://download.openmmlab.com/mmcv/dist/cu113/torch1.11.0/index.html
+# torch==1.11.0+cu113
+# torchvision==0.12.0+cu113
+# mmcv-full -f https://download.openmmlab.com/mmcv/dist/cu113/torch1.11.0/index.html
+mmcv-full -f https://download.openmmlab.com/mmcv/dist/cu116/torch1.13.0/index.html
 timm
 einops
 pthflops

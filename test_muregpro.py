@@ -11,7 +11,7 @@ import torch.nn as nn
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 import time
-from utils.dataset_synapse import Synapse_dataset
+from utils.dataset_synapse import Synapse_dataset,muregpro_dataset
 from utils.utils import test_single_volume
 
 from lib.networks import MaxViT, MaxViT4Out, MaxViT_CASCADE, MERIT_Parallel, MERIT_Cascaded
@@ -45,7 +45,7 @@ args = parser.parse_args()
 if(args.num_classes == 14):
     classes = ['spleen', 'right kidney', 'left kidney', 'gallbladder', 'esophagus', 'liver', 'stomach', 'aorta', 'inferior vena cava', 'portal vein and splenic vein', 'pancreas', 'right adrenal gland', 'left adrenal gland']
 else:
-    classes = ['spleen', 'right kidney', 'left kidney', 'gallbladder', 'pancreas', 'liver', 'stomach', 'aorta']
+    classes = ['prostate', ]
 
 def inference(args, model, test_save_path=None):
     db_test = args.Dataset(base_dir=args.volume_path, split="test_vol", list_dir=args.list_dir, nclass=args.num_classes)
@@ -72,8 +72,10 @@ def inference(args, model, test_save_path=None):
 
 
 if __name__ == "__main__":
-    args.root_path = "../../datasets/synapse/train_npz_new"
-    args.volume_path = "../../datasets/synapse/test_vol_h5_new"
+    # args.root_path = "/home/senorgroup/khm/datasets/muRegPro"
+    args.volume_path = "/home/senorgroup/khm/datasets/muRegPro"
+    args.num_classes = 2
+    args.dataset = "muregpro"
 
     if not args.deterministic:
         cudnn.benchmark = True
@@ -87,8 +89,8 @@ if __name__ == "__main__":
     torch.cuda.manual_seed(args.seed)
 
     dataset_config = {
-        'Synapse': {
-            'Dataset': Synapse_dataset,
+        'muregpro': {
+            'Dataset': muregpro_dataset,
             'volume_path': args.volume_path,
             'list_dir': args.list_dir,
             'num_classes': args.num_classes,
@@ -120,13 +122,13 @@ if __name__ == "__main__":
 
     net = MERIT_Cascaded(n_class=args.num_classes, img_size_s1=(args.img_size,args.img_size), img_size_s2=(224,224), model_scale='small', decoder_aggregation='additive', interpolation='bilinear').cuda()
     
-    snapshot_path = "model_pth/MERIT_Cascaded_Small_loss_MUTATION_w3_7_Synapse256/MERIT_Cascaded_Small_loss_MUTATION_w3_7_pretrain_40k_epo300_bs16_lr0.0001_256_s2222_run184009"
-    snapshot = os.path.join(snapshot_path, 'best.pth')
+    snapshot_path = "muregpro/MERIT_Cascaded_Small_loss_MUTATION_w3_7_muregpro256/MERIT_Cascaded_Small_loss_MUTATION_w3_7_pretrain_40k_epo300_bs16_lr0.0001_256_s2222_run203353"
+    snapshot = os.path.join(snapshot_path, 'last.pth')
     if not os.path.exists(snapshot): snapshot = snapshot.replace('best', 'epoch_'+str(args.max_epochs-1))
     net.load_state_dict(torch.load(snapshot))
     snapshot_name = snapshot_path.split('/')[-1]
 
-    log_folder = 'test_log/test_log_' + args.exp
+    log_folder = 'test_muregpro/test_log_' + args.exp
     os.makedirs(log_folder, exist_ok=True)
     logging.basicConfig(filename=log_folder + '/'+snapshot_name+".txt", level=logging.INFO, format='[%(asctime)s.%(msecs)03d] %(message)s', datefmt='%H:%M:%S')
     logging.getLogger().addHandler(logging.StreamHandler(sys.stdout))

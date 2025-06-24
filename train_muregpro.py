@@ -1,22 +1,16 @@
 import os
-os.environ["CUDA_VISIBLE_DEVICES"] = "6"
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 import argparse
 import logging
 import time
 import random
 import numpy as np
-
 import torch
 import torch.backends.cudnn as cudnn
-
 from lib.networks import MaxViT, MaxViT4Out, MaxViT_CASCADE, MERIT_Parallel, MERIT_Cascaded
-
-from trainer import trainer_synapse
-
+from trainer import trainer_synapse,trainer_muregpro
 from torchsummaryX import summary
 from ptflops import get_model_complexity_info
-
-
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -53,9 +47,11 @@ def parse_args():
 
 if __name__ == "__main__":
     args = parse_args()
-    args.root_path = "../../datasets/synapse/train_npz_new"
-    args.volume_path = "../../datasets/synapse/test_vol_h5_new"
+    args.root_path = "/home/senorgroup/khm/merit_data/muregpro"
+    args.volume_path = "/home/senorgroup/khm/datasets/muregpro_test_h5"
     args.max_iterations = 40000
+    args.num_classes = 2
+    args.dataset = "muregpro"
     if not args.deterministic:
         cudnn.benchmark = True
         cudnn.deterministic = False
@@ -71,7 +67,7 @@ if __name__ == "__main__":
     
     dataset_name = args.dataset
     dataset_config = {
-        'Synapse': {
+        'muregpro': {
             'root_path': args.root_path,
             'volume_path': args.volume_path,
             'list_dir': args.list_dir,
@@ -87,7 +83,7 @@ if __name__ == "__main__":
     args.is_pretrain = True
 
     args.exp = 'MERIT_Cascaded_Small_loss_MUTATION_w3_7_' + dataset_name + str(args.img_size)
-    snapshot_path = "model_pth/{}/{}".format(args.exp, 'MERIT_Cascaded_Small_loss_MUTATION_w3_7')
+    snapshot_path = "muregpro/{}/{}".format(args.exp, 'MERIT_Cascaded_Small_loss_MUTATION_w3_7')
     snapshot_path = snapshot_path + '_pretrain' if args.is_pretrain else snapshot_path
     snapshot_path = snapshot_path+'_'+str(args.max_iterations)[0:2]+'k' if args.max_iterations != 30000 else snapshot_path
     snapshot_path = snapshot_path + '_epo' +str(args.max_epochs) if args.max_epochs != 30 else snapshot_path
@@ -115,5 +111,5 @@ if __name__ == "__main__":
     print('{:<30}  {:<8}'.format('Computational complexity: ', macs))
     print('{:<30}  {:<8}'.format('Number of parameters: ', params))
 
-    trainer = {'Synapse': trainer_synapse,}
+    trainer = {'muregpro': trainer_muregpro,}
     trainer[dataset_name](args, net, snapshot_path)

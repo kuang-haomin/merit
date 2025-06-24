@@ -1,0 +1,7 @@
+muregpro/
+test_log/
+test_muregpro/
+pretrained_pth/
+model_pth/
+figures/
+*.pyc
