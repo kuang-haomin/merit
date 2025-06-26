@@ -21,7 +21,8 @@ def process_folders(base_dir,output_dir):
     # folders.sort()  # 排序文件夹
     
     # 选取前 75% 文件夹并随机选择 5 个
-    selected_folders = random.sample(folders[:int(len(folders) * 0.75)], 5)
+    # selected_folders = random.sample(folders[:int(len(folders) * 0.75)], 5)
+    selected_folders = folders[int(len(folders) * 0.75)+1:]
 
     data_dict = {}
     for folder in selected_folders:
@@ -47,7 +48,7 @@ def process_folders(base_dir,output_dir):
         print(f"Processed and saved data for folder: {folder}")
 
 if __name__ == "__main__":
-    base_dir = '/home/senorgroup/khm/datasets/muRegPro'  # 替换为实际路径
-    output_dir = os.path.join(base_dir,"test_h5")
+    base_dir = '../dataset/muRegPro'  # 替换为实际路径
+    output_dir = "../merit_data/val_h5"
     os.makedirs(output_dir, exist_ok=True)
     process_folders(base_dir,output_dir)

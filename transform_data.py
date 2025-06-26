@@ -70,22 +70,12 @@ def resize_and_pad(image, resize_factor=1.0, target_size=(256, 256)):
     return padded_image.astype(np.uint8)
 
 def select_slices(folder,datapath,des_img,des_lab,axis=0):
-  select_num = 50
   image = sitk.ReadImage(os.path.join(datapath,folder,f"{folder}_bm.nii.gz"))
   label = sitk.ReadImage(os.path.join(datapath,folder,f"{folder}_seg.nii.gz"))
 
   img_data = sitk.GetArrayFromImage(image)
   lab_data = sitk.GetArrayFromImage(label)
 
-  # if lab_data.shape[0] <= 50:
-  #   print(folder)
-
-  # if int(lab_data.shape[2]*1.5) < 256:
-  #   return
-
-  # print(folder, lab_data.shape)
-
-  # slices = range(lab_data.shape[0])
   if axis == 0:
     non_zero_slice = [i for i in range(lab_data.shape[axis]) if np.any(lab_data[i,:,:] != 0)]
   elif axis == 1:
@@ -94,23 +84,15 @@ def select_slices(folder,datapath,des_img,des_lab,axis=0):
     non_zero_slice = [i for i in range(lab_data.shape[axis]) if np.any(lab_data[:,:,i] != 0)]
   else:
     raise ValueError("Invalid axis value. Axis must be 0, 1, or 2.")
-     
-  # zero_slice = [i for i in range(lab_data.shape[0]) if np.all(lab_data[i,:,:] == 0)]
-  # zero_slice = list(set(range(lab_data.shape[axis])) - set(non_zero_slice))
 
-  if len(non_zero_slice) <= select_num:
-    selected_non_zero = list(non_zero_slice)
-    print(folder,"selected slice num is ",len(selected_non_zero))
-  else:
-    selected_non_zero = np.random.choice(non_zero_slice, size=select_num, replace=False)
-
-  selected_slices = list(selected_non_zero)
-
-  for img_id in selected_slices:
-    out_img = resize_and_pad(get_slice(img_data, axis, img_id),1.0,target_size=(128,128))
-    out_lab = resize_and_pad(get_slice(lab_data, axis, img_id),1.0,target_size=(128,128))
-    # out_img = resize_and_pad(get_slice(img_data, axis, img_id),1.5)
-    # out_lab = resize_and_pad(get_slice(lab_data, axis, img_id),1.5)
+  for img_id in non_zero_slice:
+    img = get_slice(img_data, axis, img_id)
+    lab = get_slice(lab_data, axis, img_id)
+    if lab.sum()/(lab.shape[0]*lab.shape[1])<0.1:
+      #  print(lab.sum()/(lab.shape[0]*lab.shape[1]))
+       continue
+    out_img = resize_and_pad(img,1.0,target_size=(128,128))
+    out_lab = resize_and_pad(lab,1.0,target_size=(128,128))
     out_lab = out_lab*255
     out_lab = out_lab.astype(np.uint8)
     slice_image = Image.fromarray(out_img)
@@ -145,10 +127,10 @@ def check_image_size(image_dir, mask_dir, target_size=(256, 256)):
 
 if __name__ == '__main__':
   # datapath = "../../datasets/UltrasoundData_crop_resize"
-  datapath = "../../datasets/muRegPro"
+  datapath = "../dataset/muRegPro"
 
-  des_img = "../../merit_data/muregpro/images"
-  des_lab = "../../merit_data/muregpro/masks"
+  des_img = "../merit_data/muregpro_v2/images"
+  des_lab = "../merit_data/muregpro_v2/masks"
   # des_img = "../cold_segdiff_data/pmub/images"
   # des_lab = "../cold_segdiff_data/pmub/masks"
 
@@ -159,11 +141,11 @@ if __name__ == '__main__':
 
   folders = sorted(os.listdir(datapath))
   # folders = ["Case0127","Case0256","Case0242","Case1014"]
-  trainsize = int(0.75*len(folders))
+  trainsize = int(0.75*len(folders))+1
   # trainsize = 4
   print("train is ",trainsize)
 
-  # select_slices(folders[0],datapath,des_img,des_lab,0)
+  # select_slices(folders[0],datapath,des_img,des_lab,2)
 
   with multiprocessing.get_context("spawn").Pool(8) as p:
     p.starmap(select_slices, zip(folders[:trainsize],[datapath]*trainsize,[des_img]*trainsize,[des_lab]*trainsize,[2]*trainsize))

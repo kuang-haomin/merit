@@ -1,5 +1,5 @@
 import os
-os.environ["CUDA_VISIBLE_DEVICES"] = "6"
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 import argparse
 import logging
 import time
@@ -53,8 +53,8 @@ def parse_args():
 
 if __name__ == "__main__":
     args = parse_args()
-    args.root_path = "../../datasets/synapse/train_npz_new"
-    args.volume_path = "../../datasets/synapse/test_vol_h5_new"
+    args.root_path = "../dataset/synapse/train_npz_new"
+    args.volume_path = "../dataset/synapse/test_vol_h5_new"
     args.max_iterations = 40000
     if not args.deterministic:
         cudnn.benchmark = True

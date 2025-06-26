@@ -168,6 +168,7 @@ def calculate_dice_percase(pred, gt):
     elif pred.sum() > 0 and gt.sum()==0:
         return 1
     else:
+        print("pred sum is",pred.sum(), "gt sum is :", gt.sum(),"\n")
         return 0
 
 
@@ -256,6 +257,7 @@ def val_single_volume(image, label, net, classes, patch_size=[256, 256], test_sa
         non_zero_slice = [i for i in range(label.shape[0]) if np.any(label[i,:,:] != 0)]
         for ind in non_zero_slice:
             slice = image[ind, :, :]
+            # print(slice.max())
             x, y = slice.shape[0], slice.shape[1]
             if x != patch_size[0] or y != patch_size[1]:
                 slice = zoom(slice, (patch_size[0] / x, patch_size[1] / y), order=3)  # previous using 0
@@ -269,8 +271,11 @@ def val_single_volume(image, label, net, classes, patch_size=[256, 256], test_sa
                 outputs = 0.0
                 for idx in range(len(P)):
                    outputs += P[idx]
+                # print(outputs[:,0,:].max())
+                # print(outputs[:,1,:].max())
                 out = torch.argmax(torch.softmax(outputs, dim=1), dim=1).squeeze(0)
                 out = out.cpu().detach().numpy()
+                # print(out.max())
                 if x != patch_size[0] or y != patch_size[1]:
                     pred = zoom(out, (x / patch_size[0], y / patch_size[1]), order=0)
                 else:

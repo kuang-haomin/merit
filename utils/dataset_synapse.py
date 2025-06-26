@@ -68,6 +68,8 @@ class muregpro_dataset(Dataset):
             self.sample_list = sorted(os.listdir(base_dir))
 
     def __len__(self):
+        # length = 16
+        # return length
         return len(self.sample_list)
 
     def __getitem__(self, idx):
@@ -80,11 +82,13 @@ class muregpro_dataset(Dataset):
             mask = Image.open(msk_path)
 
             # 将 img 转换为 numpy 数组并按给定每个像素值除以 255
-            image = np.array(img)
+            image = np.array(img)/255.0
 
             # 将 mask 转换为 numpy 数组，并将 255 的值转换为 1，其他值保持不变
             label = np.array(mask)
-            label[label == 255] = 1
+            label[label == 255] = 1.0
+
+            image = image.astype(np.float32)
             label = label.astype(np.float32)
 
         else:
@@ -109,12 +113,18 @@ class muregpro_dataset(Dataset):
                 image, label = data['image'][:], data['label'][:]
             # data = h5py.File(filepath)
             # image, label = data['image'][:], data['label'][:]
-            image = np.array(image) / 255.0
             label = np.array(label)
+            # print(label.sum())
             image = rearrange_and_pad(image)
             label = rearrange_and_pad(label)
+            # print(label.sum())
+            # for i in range(image.shape[0]):
+            #     if image[i,:,:].max() < 0.1:
+            #         print(vol_name,i,"error, image max is", image[i,:,:].max())
+
+            image = np.array(image)/255.0
             image = image.astype(np.float32)
-            label = label.astype(np.float32)
+            label = label.astype(np.float32)    
 
             #image = np.reshape(image, (image.shape[2], 512, 512))
             #label = np.reshape(label, (label.shape[2], 512, 512))
@@ -126,7 +136,7 @@ class muregpro_dataset(Dataset):
             label[label==12]= 0
             label[label==13]= 0
             label[label==11]= 5
-            
+        # print("image max is ",image.max(), " ,label max is",label.max())
         sample = {'image': image, 'label': label}
         if self.transform:
             sample = self.transform(sample)
@@ -178,7 +188,7 @@ class Synapse_dataset(Dataset):
             label[label==12]= 0
             label[label==13]= 0
             label[label==11]= 5
-            
+        # print("image max is ",image.max(), " ,label max is",label.max())
         sample = {'image': image, 'label': label}
         if self.transform:
             sample = self.transform(sample)
@@ -261,4 +271,4 @@ def resize_and_pad(image, resize_factor=1.0, target_size=(256, 256)):
                            (pad_x, target_size[1] - cropped_image.shape[1] - pad_x)),
                           mode='constant', constant_values=0)
     
-    return padded_image.astype(np.uint8)
+    return padded_image

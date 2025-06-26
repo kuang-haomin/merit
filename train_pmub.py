@@ -47,8 +47,8 @@ def parse_args():
 
 if __name__ == "__main__":
     args = parse_args()
-    args.root_path = "../merit_data/muregpro_v2"
-    args.volume_path = "../merit_data/muregpro/val_h5"
+    args.root_path = "../merit_data/pmub"
+    args.volume_path = "../merit_data/pmub/val_h5"
     args.max_iterations = 40000
     args.num_classes = 2
     args.dataset = "muregpro"

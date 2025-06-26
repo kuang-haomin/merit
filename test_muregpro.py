@@ -1,5 +1,5 @@
 import os
-os.environ["CUDA_VISIBLE_DEVICES"] = "6"
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 import argparse
 import logging
 import random
@@ -73,7 +73,7 @@ def inference(args, model, test_save_path=None):
 
 if __name__ == "__main__":
     # args.root_path = "/home/senorgroup/khm/datasets/muRegPro"
-    args.volume_path = "/home/senorgroup/khm/datasets/muRegPro"
+    args.volume_path = "../dataset/muRegPro"
     args.num_classes = 2
     args.dataset = "muregpro"
 
@@ -122,8 +122,8 @@ if __name__ == "__main__":
 
     net = MERIT_Cascaded(n_class=args.num_classes, img_size_s1=(args.img_size,args.img_size), img_size_s2=(224,224), model_scale='small', decoder_aggregation='additive', interpolation='bilinear').cuda()
     
-    snapshot_path = "muregpro/MERIT_Cascaded_Small_loss_MUTATION_w3_7_muregpro256/MERIT_Cascaded_Small_loss_MUTATION_w3_7_pretrain_40k_epo300_bs16_lr0.0001_256_s2222_run203353"
-    snapshot = os.path.join(snapshot_path, 'last.pth')
+    snapshot_path = "muregpro"
+    snapshot = os.path.join(snapshot_path, 'best.pth')
     if not os.path.exists(snapshot): snapshot = snapshot.replace('best', 'epoch_'+str(args.max_epochs-1))
     net.load_state_dict(torch.load(snapshot))
     snapshot_name = snapshot_path.split('/')[-1]

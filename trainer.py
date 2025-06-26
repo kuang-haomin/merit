@@ -86,9 +86,9 @@ def trainer_synapse(args, model, snapshot_path):
         for i_batch, sampled_batch in enumerate(trainloader):
             image_batch, label_batch = sampled_batch['image'], sampled_batch['label']
             image_batch, label_batch = image_batch.cuda(), label_batch.squeeze(1).cuda()
-            for idx in range(image_batch.shape[0]):
-                print(image_batch[idx,:].max())
-                print(label_batch[idx,:].max())
+            # for idx in range(image_batch.shape[0]):
+            #     print(image_batch[idx,:].max())
+            #     print(label_batch[idx,:].max())
             
             P = model(image_batch)            
            
@@ -163,8 +163,8 @@ def infer_murgepro(args, model, best_performance):
     for i_batch, sampled_batch in tqdm(enumerate(testloader)):
         h, w = sampled_batch["image"].size()[2:]
         image, label, case_name = sampled_batch["image"], sampled_batch["label"], sampled_batch['case_name'][0]
-        print(image.max())
-        print(label.max())
+        # print(image.max())
+        # print(label.max())
         metric_i = val_single_volume(image, label, model, classes=args.num_classes, patch_size=[args.img_size, args.img_size],
                                       case=case_name, z_spacing=args.z_spacing)
         metric_list += np.array(metric_i)
@@ -219,8 +219,10 @@ def trainer_muregpro(args, model, snapshot_path):
             image_batch, label_batch = sampled_batch['image'], sampled_batch['label']
             image_batch, label_batch = image_batch.cuda(), label_batch.squeeze(1).cuda()
             for idx in range(image_batch.shape[0]):
-                print(image_batch[idx,:].max())
-                print(label_batch[idx,:].max())
+                if label_batch[idx,:].max() != 1:
+                    raise ValueError("label max is not 1")
+                if image_batch[idx,:].max()*255.0<0.1:
+                    raise ValueError(f"image max is too small {image_batch[idx,:].max()*255.0}")
             
             P = model(image_batch)            
            
@@ -262,7 +264,7 @@ def trainer_muregpro(args, model, snapshot_path):
         
         performance = infer_murgepro(args, model, best_performance)
         
-        save_interval = 50
+        save_interval = 10
 
         if(best_performance <= performance):
             best_performance = performance

@@ -532,6 +532,14 @@ class MERIT_Cascaded(nn.Module):
         # backbone network initialization with pretrained weight
         self.backbone1 = load_pretrained_weights(self.img_size_s1[0], self.model_scale)
         self.backbone2 = load_pretrained_weights(self.img_size_s2[0], self.model_scale)
+        # for param in self.backbone1.parameters():
+        #     param.requires_grad = False
+        # for param in self.backbone2.parameters():
+        #     param.requires_grad = False
+        # num_params = sum(p.numel() for p in self.backbone1.parameters() if p.requires_grad)
+        # print(f"self.backbone1 parameters: {num_params/10**6} M")
+        # num_params = sum(p.numel() for p in self.backbone2.parameters() if p.requires_grad)
+        # print(f"self.backbone2 parameters: {num_params/10**6} M")
         
         if(self.model_scale=='tiny'):
             self.channels = [512, 256, 128, 64]
